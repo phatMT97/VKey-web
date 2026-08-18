@@ -1,0 +1,541 @@
+---
+import {
+  CheckCircle2,
+  ChevronRight,
+  Copy,
+  Cpu,
+  Download,
+  FileText,
+  Gamepad2,
+  Github,
+  HelpCircle,
+  Keyboard,
+  Layers,
+  RefreshCcw,
+  Settings2,
+  ShieldCheck,
+  Sparkles,
+  Terminal,
+  Zap,
+} from 'lucide-astro';
+import '../styles/global.css';
+
+type ReleaseAsset = {
+  name: string;
+  browser_download_url: string;
+};
+
+type GitHubRelease = {
+  tag_name: string;
+  name: string | null;
+  body: string | null;
+  html_url: string;
+  published_at: string;
+  assets: ReleaseAsset[];
+};
+
+const githubOwner = import.meta.env.PUBLIC_GITHUB_OWNER ?? 'phatMT97';
+const githubRepo = import.meta.env.PUBLIC_GITHUB_REPO ?? 'VKey';
+const wingetStandardId = import.meta.env.PUBLIC_WINGET_ID ?? 'PhatMT97.VKey';
+const wingetClassicId = 'PhatMT97.VKey.Classic';
+const releasesUrl = `https://github.com/${githubOwner}/${githubRepo}/releases`;
+const repoUrl = `https://github.com/${githubOwner}/${githubRepo}`;
+const guideUrl = `https://github.com/${githubOwner}/${githubRepo}/blob/master/docs/GUIDE.md`;
+
+async function getLatestRelease(): Promise<GitHubRelease | null> {
+  try {
+    const response = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/releases/latest`, {
+      headers: { Accept: 'application/vnd.github+json' },
+    });
+
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function escapeAttribute(value: string): string {
+  return escapeHtml(value).replaceAll('`', '&#96;');
+}
+
+function isSafeUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+function renderInlineMarkdown(value: string): string {
+  let html = escapeHtml(value);
+
+  html = html.replace(/\[!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)\]\((https?:\/\/[^\s)]+)\)/g, (_match, alt: string, imageUrl: string, linkUrl: string) => {
+    if (!isSafeUrl(imageUrl) || !isSafeUrl(linkUrl)) return '';
+    return `<a href="${escapeAttribute(linkUrl)}" target="_blank" rel="noreferrer"><img src="${escapeAttribute(imageUrl)}" alt="${escapeAttribute(alt)}" loading="lazy" /></a>`;
+  });
+  html = html.replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g, (_match, alt: string, imageUrl: string) => {
+    if (!isSafeUrl(imageUrl)) return '';
+    return `<img src="${escapeAttribute(imageUrl)}" alt="${escapeAttribute(alt)}" loading="lazy" />`;
+  });
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_match, label: string, linkUrl: string) => {
+    if (!isSafeUrl(linkUrl)) return label;
+    return `<a href="${escapeAttribute(linkUrl)}" target="_blank" rel="noreferrer">${label}</a>`;
+  });
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+  return html;
+}
+
+function renderReleaseMarkdown(markdown: string): string {
+  // Strip leading h1/h2 title if it duplicates the release card header
+  const cleanMarkdown = markdown.trim().replace(/^#{1,2}\s+[^\n]+\n*/, '');
+  const lines = cleanMarkdown.replace(/\r\n/g, '\n').split('\n');
+  const output: string[] = [];
+  const paragraph: string[] = [];
+  const codeLines: string[] = [];
+  let listType: 'ul' | 'ol' | null = null;
+  let inCodeBlock = false;
+  let codeLanguage = '';
+
+  const closeParagraph = () => {
+    if (paragraph.length === 0) return;
+    output.push(`<p>${renderInlineMarkdown(paragraph.join(' '))}</p>`);
+    paragraph.length = 0;
+  };
+
+  const closeList = () => {
+    if (!listType) return;
+    output.push(`</${listType}>`);
+    listType = null;
+  };
+
+  const closeCodeBlock = () => {
+    const languageClass = codeLanguage ? ` class="language-${escapeAttribute(codeLanguage)}"` : '';
+    output.push(`<pre><code${languageClass}>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
+    codeLines.length = 0;
+    codeLanguage = '';
+    inCodeBlock = false;
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    const fence = line.match(/^```\s*([\w-]*)\s*$/);
+
+    if (fence) {
+      if (inCodeBlock) {
+        closeCodeBlock();
+      } else {
+        closeParagraph();
+        closeList();
+        inCodeBlock = true;
+        codeLanguage = fence[1] ?? '';
+      }
+      continue;
+    }
+
+    if (inCodeBlock) {
+      codeLines.push(rawLine);
+      continue;
+    }
+
+    if (!line) {
+      closeParagraph();
+      closeList();
+      continue;
+    }
+
+    const heading = line.match(/^(#{1,6})\s+(.+)$/);
+    if (heading) {
+      closeParagraph();
+      closeList();
+      const level = Math.min(heading[1].length + 2, 6);
+      output.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+      continue;
+    }
+
+    if (/^---+$/.test(line)) {
+      closeParagraph();
+      closeList();
+      output.push('<hr />');
+      continue;
+    }
+
+    const unordered = line.match(/^[-*+]\s+(.+)$/);
+    if (unordered) {
+      closeParagraph();
+      if (listType !== 'ul') {
+        closeList();
+        output.push('<ul>');
+        listType = 'ul';
+      }
+      output.push(`<li>${renderInlineMarkdown(unordered[1])}</li>`);
+      continue;
+    }
+
+    const ordered = line.match(/^\d+\.\s+(.+)$/);
+    if (ordered) {
+      closeParagraph();
+      if (listType !== 'ol') {
+        closeList();
+        output.push('<ol>');
+        listType = 'ol';
+      }
+      output.push(`<li>${renderInlineMarkdown(ordered[1])}</li>`);
+      continue;
+    }
+
+    const quote = line.match(/^>\s+(.+)$/);
+    if (quote) {
+      closeParagraph();
+      closeList();
+      output.push(`<blockquote>${renderInlineMarkdown(quote[1])}</blockquote>`);
+      continue;
+    }
+
+    closeList();
+    paragraph.push(line);
+  }
+
+  if (inCodeBlock) closeCodeBlock();
+  closeParagraph();
+  closeList();
+  return output.join('\n');
+}
+
+const latestRelease = await getLatestRelease();
+const preferredAsset = latestRelease?.assets.find((asset) => /\.(exe|msi|msix|zip)$/i.test(asset.name));
+const downloadUrl = preferredAsset?.browser_download_url ?? latestRelease?.html_url ?? `${releasesUrl}/latest`;
+const releaseTitle = latestRelease?.name || latestRelease?.tag_name || 'Phiên bản mới nhất';
+const releaseDate = latestRelease
+  ? new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(latestRelease.published_at))
+  : null;
+const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latestRelease.body) : '';
+---
+
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="VKey là bộ gõ tiếng Việt hiện đại cho Windows viết bằng C++20, Dual-Engine C++/Rust, Hybrid TSF + Hook, siêu nhẹ ~0.3-2 MB RAM và 100% offline an toàn." />
+    <meta name="theme-color" content="#222B49" />
+    <title>VKey — Bộ gõ tiếng Việt hiện đại cho Windows</title>
+    <link rel="icon" href="/logo.png" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="VKey home">
+        <img class="brand-mark" src="/logo.png" alt="VKey logo" width="36" height="36" />
+        <span>VKey</span>
+      </a>
+      <nav class="nav" aria-label="Điều hướng chính">
+        <a href="#changelog">Changelog</a>
+        <a href="#features">Tính năng</a>
+        <a href="#install">Cài đặt</a>
+        <a href="#faq">FAQ</a>
+        <a href={guideUrl} target="_blank" rel="noreferrer">Hướng dẫn</a>
+      </nav>
+      <a class="header-cta" href={downloadUrl}>Download</a>
+    </header>
+
+    <main id="top">
+      <section class="hero section-shell">
+        <div class="hero-copy">
+          <p class="eyebrow"><Sparkles size={16} /> Bộ gõ tiếng Việt hiện đại cho Windows · C++20</p>
+          <h1>Bộ gõ tiếng Việt hiện đại cho Windows.</h1>
+          <p class="hero-lead">
+            Bộ gõ tiếng Việt thế hệ mới cho Windows — siêu nhẹ, mượt mà, 100% offline và tối ưu cho cả làm việc lẫn chơi game.
+          </p>
+
+          <div class="cta-row" aria-label="Download options">
+            <a class="button button-primary" href={downloadUrl}>
+              <Download size={20} /> Tải bản mới nhất
+            </a>
+            <a class="button button-secondary" href="#install">
+              <Terminal size={18} /> Cài bằng winget
+            </a>
+          </div>
+
+          <div class="command-card" aria-label="Winget install command">
+            <Terminal size={18} />
+            <code id="winget-hero">winget install {wingetStandardId}</code>
+            <button class="copy-button" type="button" data-copy-target="winget-hero" aria-label="Sao chép lệnh winget">
+              <Copy size={16} />
+            </button>
+          </div>
+
+          <div class="trust-row" aria-label="Product highlights">
+            <span><CheckCircle2 size={16} /> Siêu nhẹ ~0.3–2 MB RAM</span>
+            <span><CheckCircle2 size={16} /> 100% Offline & Bảo mật</span>
+            <span><CheckCircle2 size={16} /> Telex + VNI / Tự định nghĩa</span>
+            <span><CheckCircle2 size={16} /> Game-Friendly (WASD mượt)</span>
+            <span><CheckCircle2 size={16} /> Dual-Engine C++ & Rust</span>
+            <span><CheckCircle2 size={16} /> TSF + Hook Hybrid</span>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-label="VKey app preview">
+          <div class="app-window">
+            <div class="window-bar">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="window-body">
+              <div class="status-pill"><Zap size={14} /> Smart Switch per-app</div>
+              <h2>Gõ tiếng Việt mượt mà</h2>
+              <div class="typing-demo">
+                <span>tieengs Vieetj</span>
+                <ChevronRight size={18} />
+                <strong>tiếng Việt</strong>
+              </div>
+              <div class="settings-list">
+                <div><Keyboard size={18} /> Telex + VNI / Tự định nghĩa</div>
+                <div><Cpu size={18} /> Dual-Engine (C++ & Rust)</div>
+                <div><Settings2 size={18} /> Cấu hình theo từng App</div>
+              </div>
+            </div>
+          </div>
+          <div class="floating-card card-top"><ShieldCheck size={18} /> 100% Offline & No Keylogger</div>
+          <div class="floating-card card-bottom"><Gamepad2 size={18} /> Chế độ Game (WASD mượt)</div>
+        </div>
+      </section>
+
+      <section id="changelog" class="section-shell changelog-section">
+        <div class="section-heading">
+          <p class="eyebrow"><FileText size={16} /> Latest release</p>
+          <h2>Changelog mới nhất</h2>
+        </div>
+
+        <article class="release-card">
+          <div>
+            <p class="release-meta">{releaseDate ?? 'Chưa lấy được release'}</p>
+            <h3>{releaseTitle}</h3>
+          </div>
+          <a class="release-link" href={latestRelease?.html_url ?? releasesUrl} target="_blank" rel="noreferrer">
+            Xem trên GitHub <Github size={18} />
+          </a>
+
+          {
+            changelogHtml ? (
+              <div class="changelog-content" set:html={changelogHtml}></div>
+            ) : (
+              <p class="empty-note">Chưa có nội dung changelog công khai. Khi GitHub Release có mô tả, phần này sẽ hiển thị tại đây.</p>
+            )
+          }
+        </article>
+      </section>
+
+      <section id="features" class="section-shell">
+        <div class="section-heading centered">
+          <p class="eyebrow"><Sparkles size={16} /> Tính năng nổi bật</p>
+          <h2>Mọi thứ bạn cần ở một bộ gõ thế hệ mới</h2>
+          <p>Gọn nhẹ, chính xác, phản hồi tức thì và tối ưu cho từng ứng dụng.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <Cpu size={24} />
+            <h3>Dual-Engine C++ & Rust</h3>
+            <p>Engine C++20 siêu nhẹ kết hợp tùy chọn Rust tự sửa lỗi gõ nhanh và nhận diện tiếng Anh mượt mà.</p>
+          </article>
+          <article class="feature-card">
+            <Keyboard size={24} />
+            <h3>Telex + VNI / Tự định nghĩa</h3>
+            <p>Hỗ trợ Telex, VNI, Simple Telex, gõ song song cả hai kiểu và tương thích đầy đủ mọi bảng mã.</p>
+          </article>
+          <article class="feature-card">
+            <RefreshCcw size={24} />
+            <h3>Smart Switch theo App</h3>
+            <p>Tự động nhớ chế độ V/E theo từng app, hỗ trợ khoá cứng chế độ và tự tắt khi dùng bàn phím CJK.</p>
+          </article>
+          <article class="feature-card">
+            <Gamepad2 size={24} />
+            <h3>Chế độ Game (WASD)</h3>
+            <p>Bật phím tắt chơi game mượt mà, di chuyển WASD không bị kẹt hay nuốt phím khi đang chat.</p>
+          </article>
+          <article class="feature-card">
+            <Zap size={24} />
+            <h3>Macro & Chuyển mã nhanh</h3>
+            <p>Gõ tắt dài tới 20.000 ký tự có xuống dòng, bôi đen chuyển mã tức thì và đổi chữ hoa/thường.</p>
+          </article>
+          <article class="feature-card">
+            <Layers size={24} />
+            <h3>Siêu nhẹ & 100% Offline</h3>
+            <p>Chỉ chiếm ~0.3–2 MB RAM, phản hồi tức thì với TSF + Hook và hoạt động hoàn toàn offline.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="install" class="section-shell install-section">
+        <div class="section-heading">
+          <p class="eyebrow"><Download size={16} /> Cài đặt</p>
+          <h2>Cài đặt theo cách bạn muốn</h2>
+          <p>Tải file Zip giải nén dùng ngay hoặc cài tự động qua WinGet.</p>
+        </div>
+
+        <div class="install-grid">
+          <article class="install-card highlighted">
+            <Download size={24} />
+            <h3>GitHub Release</h3>
+            <p>Tải file Zip chính thức từ GitHub — giải nén và dùng ngay không cần cài đặt:</p>
+            <ul class="edition-list">
+              <li>
+                <CheckCircle2 size={16} />
+                <span><strong>Bản Tiêu chuẩn:</strong> Giao diện Sciter Glassmorphism hiện đại, tự đổi theme sáng/tối.</span>
+              </li>
+              <li>
+                <CheckCircle2 size={16} />
+                <span><strong>Bản Classic:</strong> Win32 native siêu nhẹ, 100% mã nguồn mở, đã ký Authenticode.</span>
+              </li>
+            </ul>
+            <div class="install-actions">
+              <a href={downloadUrl}>Tải bản Tiêu chuẩn mới nhất <ChevronRight size={16} /></a>
+              <a class="secondary" href={releasesUrl} target="_blank" rel="noreferrer">Xem tất cả bản tải (Classic...) <ChevronRight size={16} /></a>
+            </div>
+          </article>
+
+          <article class="install-card">
+            <Terminal size={24} />
+            <h3>Cài đặt qua WinGet</h3>
+            <p>Mở Terminal hoặc PowerShell và chạy một trong hai lệnh bên dưới:</p>
+            <div class="install-commands">
+              <div class="command-group">
+                <span class="command-group-label">Bản Tiêu chuẩn (Sciter UI)</span>
+                <div class="command-box">
+                  <code id="winget-standard">winget install {wingetStandardId}</code>
+                  <button class="copy-button" type="button" data-copy-target="winget-standard" aria-label="Sao chép lệnh winget bản Tiêu chuẩn">
+                    <Copy size={16} />
+                  </button>
+                </div>
+              </div>
+              <div class="command-group">
+                <span class="command-group-label">Bản Classic (Win32 Native)</span>
+                <div class="command-box">
+                  <code id="winget-classic">winget install {wingetClassicId}</code>
+                  <button class="copy-button" type="button" data-copy-target="winget-classic" aria-label="Sao chép lệnh winget bản Classic">
+                    <Copy size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="faq" class="section-shell faq-section">
+        <div class="section-heading centered">
+          <p class="eyebrow"><HelpCircle size={16} /> FAQ</p>
+          <h2>Câu hỏi thường gặp</h2>
+          <p>Giải đáp thắc mắc về tính năng, bảo mật và cách sử dụng VKey.</p>
+        </div>
+
+        <div class="faq-grid">
+          <details open>
+            <summary>VKey có an toàn không? Có theo dõi phím gõ (keylogger) không?</summary>
+            <div class="faq-body">
+              <ul>
+                <li><strong>100% Offline:</strong> Hoạt động hoàn toàn trên máy cục bộ, không thu thập và không gửi bất kỳ dữ liệu nào ra ngoài.</li>
+                <li><strong>Mã nguồn mở:</strong> Minh bạch trên GitHub theo giấy phép GPL-3.0 để cộng đồng tự do kiểm chứng.</li>
+                <li><strong>Xác thực Sigstore:</strong> Mỗi bản phát hành đều đính kèm build attestation từ GitHub Actions để chứng minh nguồn gốc.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>VKey có mấy phiên bản? Khác nhau như thế nào?</summary>
+            <div class="faq-body">
+              <ul>
+                <li><strong>Bản Tiêu chuẩn (Sciter UI):</strong> Giao diện Glassmorphism hiện đại, tự động đổi theme Sáng/Tối theo Windows, hỗ trợ nạp Engine Rust.</li>
+                <li><strong>Bản Classic:</strong> Win32 native siêu nhẹ, 100% mã nguồn mở và đã được ký số Authenticode đầy đủ bởi SignPath.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>Engine Rust Nâng cao là gì và có bắt buộc dùng không?</summary>
+            <div class="faq-body">
+              <ul>
+                <li><strong>Không bắt buộc:</strong> VKey mặc định chạy Engine C++20 có sẵn, đáp ứng 100% nhu cầu gõ tiếng Việt thông thường.</li>
+                <li><strong>Tính năng mở rộng:</strong> Tự sửa lỗi gõ nhanh đảo phím (<code>hcaof</code> → <code>chào</code>) và nhận diện từ tiếng Anh (<code>asus</code>, <code>status</code>) không bị dính dấu.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>Chơi game có bị dính phím di chuyển (WASD) không?</summary>
+            <div class="faq-body">
+              <ul>
+                <li><strong>Không bị dính phím:</strong> Bật <strong>Chế độ Game (WASD)</strong> bằng phím tắt ngay khi đang ở trong game.</li>
+                <li><strong>Chuyển tiếp phím gốc:</strong> Di chuyển W, A, S, D mượt mà trong khi vẫn thoải mái chat tiếng Việt Telex bình thường.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>Làm sao để tự động đổi chế độ tiếng Anh/Việt theo từng app?</summary>
+            <div class="faq-body">
+              <ul>
+                <li><strong>Lưu chế độ theo app:</strong> VKey tự động ghi nhớ trạng thái V hoặc E cho từng cửa sổ làm việc.</li>
+                <li><strong>Khoá chế độ:</strong> Cố định luôn là <code>E</code> (cho IDE/Game) hoặc <code>V</code> (cho app Chat) để tránh đổi nhầm.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>Tôi có thể dùng VKey cho công việc và doanh nghiệp không?</summary>
+            <div class="faq-body">
+              <ul>
+                <li><strong>Hoàn toàn tự do & miễn phí:</strong> VKey phát hành theo giấy phép mã nguồn mở <strong>GPL-3.0</strong>.</li>
+                <li>Không phát sinh bất kỳ chi phí hay nghĩa vụ nào khi sử dụng cho cá nhân, công việc hay trong doanh nghiệp.</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-left">
+        <a class="brand" href="#top" aria-label="VKey home">
+          <img class="brand-mark" src="/logo.png" alt="VKey logo" width="36" height="36" />
+          <span>VKey</span>
+        </a>
+        <p>Bộ gõ tiếng Việt hiện đại, siêu nhẹ và mã nguồn mở cho Windows.</p>
+      </div>
+      <div class="footer-right">
+        <a class="github-link" href={repoUrl} target="_blank" rel="noreferrer" aria-label="GitHub repository">
+          <Github size={20} />
+          <span>GitHub</span>
+        </a>
+      </div>
+    </footer>
+
+    <script>
+      const copyButtons = document.querySelectorAll('[data-copy-target]');
+      copyButtons.forEach((button) => {
+        button.addEventListener('click', async () => {
+          const targetId = button.getAttribute('data-copy-target');
+          const target = targetId ? document.getElementById(targetId) : null;
+          if (!target?.textContent) return;
+          await navigator.clipboard.writeText(target.textContent.trim());
+          button.setAttribute('data-copied', 'true');
+          window.setTimeout(() => button.removeAttribute('data-copied'), 1400);
+        });
+      });
+    </script>
+  </body>
+</html>
