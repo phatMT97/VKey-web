@@ -1,6 +1,7 @@
 /// <reference types="astro/client" />
 
 interface ImportMetaEnv {
+  readonly GITHUB_TOKEN?: string;
   readonly PUBLIC_GITHUB_OWNER?: string;
   readonly PUBLIC_GITHUB_REPO?: string;
   readonly PUBLIC_WINGET_ID?: string;

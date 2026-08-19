@@ -37,6 +37,7 @@ type GitHubRelease = {
 
 const githubOwner = import.meta.env.PUBLIC_GITHUB_OWNER ?? 'phatMT97';
 const githubRepo = import.meta.env.PUBLIC_GITHUB_REPO ?? 'VKey';
+const githubToken = import.meta.env.GITHUB_TOKEN;
 const wingetStandardId = import.meta.env.PUBLIC_WINGET_ID ?? 'PhatMT97.VKey';
 const wingetClassicId = 'PhatMT97.VKey.Classic';
 const releasesUrl = `https://github.com/${githubOwner}/${githubRepo}/releases`;
@@ -47,13 +48,27 @@ const antivirusGuideUrl = `https://github.com/${githubOwner}/${githubRepo}/blob/
 
 async function getLatestRelease(): Promise<GitHubRelease | null> {
   try {
+    const headers: Record<string, string> = {
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
+
+    if (githubToken) {
+      headers.Authorization = `Bearer ${githubToken}`;
+    }
+
     const response = await fetch(`https://api.github.com/repos/${githubOwner}/${githubRepo}/releases/latest`, {
-      headers: { Accept: 'application/vnd.github+json' },
+      headers,
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.warn(`GitHub Releases API returned ${response.status} ${response.statusText} for ${githubOwner}/${githubRepo}.`);
+      return null;
+    }
+
     return await response.json();
-  } catch {
+  } catch (error) {
+    console.warn(`Could not fetch the latest GitHub release for ${githubOwner}/${githubRepo}.`, error);
     return null;
   }
 }
