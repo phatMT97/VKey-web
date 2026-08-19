@@ -1,0 +1,207 @@
+---
+import { ArrowLeft, ExternalLink, Github, List, Moon, Sun } from 'lucide-astro';
+import { Content as GuideContent } from '../content/guide.md';
+import '../styles/global.css';
+import '../styles/guide.css';
+
+const githubOwner = import.meta.env.PUBLIC_GITHUB_OWNER ?? 'phatMT97';
+const githubRepo = import.meta.env.PUBLIC_GITHUB_REPO ?? 'VKey';
+const sourceUrl = `https://github.com/${githubOwner}/${githubRepo}/blob/master/docs/GUIDE.md`;
+
+const guideSections = [
+  { href: '#quick-start', label: 'Bắt đầu nhanh' },
+  { href: '#typing-method', label: 'Kiểu gõ và bảng mã' },
+  { href: '#app-config', label: 'Cấu hình theo ứng dụng' },
+  { href: '#switching', label: 'Chuyển Việt và Anh' },
+  { href: '#spellcheck', label: 'Chính tả và khôi phục từ' },
+  { href: '#hotkeys', label: 'Phím tắt' },
+  { href: '#tsf-mode', label: 'Windows TSF' },
+  { href: '#macro', label: 'Gõ tắt và macro' },
+  { href: '#convert-tool', label: 'Chuyển mã' },
+  { href: '#game-mode', label: 'Cấu hình cho game' },
+  { href: '#startup', label: 'Autostart và watchdog' },
+  { href: '#troubleshooting', label: 'Xử lý sự cố' },
+];
+---
+
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="Hướng dẫn cài đặt, cấu hình và xử lý sự cố khi dùng bộ gõ tiếng Việt VKey trên Windows." />
+    <meta id="theme-color" name="theme-color" content="#ffffff" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <title>Hướng dẫn sử dụng VKey</title>
+    <script is:inline>
+      (() => {
+        let theme = 'light';
+        try {
+          const savedTheme = localStorage.getItem('vkey-theme');
+          theme = savedTheme === 'light' || savedTheme === 'dark'
+            ? savedTheme
+            : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        } catch {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.dataset.theme = theme;
+        document.querySelector('#theme-color')?.setAttribute('content', theme === 'dark' ? '#0e1322' : '#ffffff');
+      })();
+    </script>
+  </head>
+  <body class="guide-page">
+    <header class="guide-header">
+      <a class="brand" href="/" aria-label="Về trang chủ VKey">
+        <img class="brand-mark" src="/logo.png" alt="VKey logo" width="36" height="36" />
+        <span>VKey</span>
+      </a>
+      <div class="guide-header-actions">
+        <a class="guide-header-link guide-header-source" href={sourceUrl} target="_blank" rel="noreferrer">
+          <Github size={18} aria-hidden="true" />
+          <span>Bản Markdown</span>
+        </a>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Chuyển giao diện" title="Chuyển giao diện">
+          <Moon class="theme-icon theme-icon-moon" size={19} aria-hidden="true" />
+          <Sun class="theme-icon theme-icon-sun" size={19} aria-hidden="true" />
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="guide-hero" aria-labelledby="guide-title">
+        <a class="guide-back" href="/"><ArrowLeft size={17} aria-hidden="true" /> Trang chủ</a>
+        <p class="guide-kicker">Tài liệu sử dụng</p>
+        <h1 id="guide-title">Thiết lập VKey theo cách bạn làm việc.</h1>
+        <p class="guide-intro">
+          Từ cài đặt ban đầu đến cấu hình riêng cho từng ứng dụng, macro, TSF và cách xử lý những lỗi thường gặp.
+        </p>
+        <div class="guide-hero-actions">
+          <a class="guide-start-link" href="#quick-start">Bắt đầu nhanh</a>
+          <a class="guide-source-link" href={sourceUrl} target="_blank" rel="noreferrer">
+            Xem tài liệu nguồn <ExternalLink size={16} aria-hidden="true" />
+          </a>
+        </div>
+      </section>
+
+      <div class="guide-shell">
+        <aside class="guide-sidebar" aria-label="Mục lục hướng dẫn">
+          <details class="guide-toc" open>
+            <summary><List size={18} aria-hidden="true" /> Mục lục</summary>
+            <nav>
+              {guideSections.map((section) => (
+                <a href={section.href} data-guide-link>{section.label}</a>
+              ))}
+            </nav>
+          </details>
+        </aside>
+
+        <article class="guide-article">
+          <GuideContent />
+          <footer class="guide-document-footer">
+            <p>Chưa tìm thấy câu trả lời?</p>
+            <a href={`https://github.com/${githubOwner}/${githubRepo}/issues`} target="_blank" rel="noreferrer">
+              Mở issue trên GitHub <ExternalLink size={16} aria-hidden="true" />
+            </a>
+          </footer>
+        </article>
+      </div>
+    </main>
+
+    <script>
+      const root = document.documentElement;
+      const themeButton = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+      const themeColor = document.querySelector<HTMLMetaElement>('#theme-color');
+
+      const applyTheme = (theme: 'light' | 'dark') => {
+        root.dataset.theme = theme;
+        const label = theme === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối';
+        themeButton?.setAttribute('aria-label', label);
+        themeButton?.setAttribute('title', label);
+        themeButton?.setAttribute('aria-pressed', String(theme === 'dark'));
+        themeColor?.setAttribute('content', theme === 'dark' ? '#0e1322' : '#ffffff');
+      };
+
+      applyTheme(root.dataset.theme === 'dark' ? 'dark' : 'light');
+
+      themeButton?.addEventListener('click', () => {
+        const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        applyTheme(nextTheme);
+        try {
+          localStorage.setItem('vkey-theme', nextTheme);
+        } catch {
+          // Theme still applies for this page when storage is unavailable.
+        }
+      });
+
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+      systemTheme.addEventListener('change', (event) => {
+        try {
+          if (localStorage.getItem('vkey-theme')) return;
+        } catch {
+          // Follow the system theme when storage is unavailable.
+        }
+        applyTheme(event.matches ? 'dark' : 'light');
+      });
+
+      const guideLinks = Array.from(
+        document.querySelectorAll<HTMLAnchorElement>('[data-guide-link]'),
+      );
+
+      const setActiveGuideSection = (sectionId: string) => {
+        guideLinks.forEach((link) => {
+          const isActive = link.hash === `#${sectionId}`;
+          link.classList.toggle('is-active', isActive);
+          if (isActive) {
+            link.setAttribute('aria-current', 'location');
+          } else {
+            link.removeAttribute('aria-current');
+          }
+        });
+      };
+
+      const initialSection = window.location.hash.slice(1);
+      const initialLink = guideLinks.find((link) => link.hash === `#${initialSection}`);
+      setActiveGuideSection(initialLink ? initialSection : 'quick-start');
+
+      guideLinks.forEach((link) => {
+        link.addEventListener('click', () => setActiveGuideSection(link.hash.slice(1)));
+      });
+
+      window.addEventListener('hashchange', () => {
+        const sectionId = window.location.hash.slice(1);
+        if (guideLinks.some((link) => link.hash === `#${sectionId}`)) {
+          setActiveGuideSection(sectionId);
+        }
+      });
+
+      if ('IntersectionObserver' in window) {
+        const observedSections = new Map<Element, string>();
+        const sectionObserver = new IntersectionObserver((entries) => {
+          const visibleSection = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((first, second) => first.boundingClientRect.top - second.boundingClientRect.top)
+            .at(-1);
+
+          if (!visibleSection) return;
+          const sectionId = observedSections.get(visibleSection.target);
+          if (sectionId) setActiveGuideSection(sectionId);
+        }, {
+          rootMargin: '-112px 0px -55% 0px',
+          threshold: 0,
+        });
+
+        guideLinks.forEach((link) => {
+          const sectionId = link.hash.slice(1);
+          const anchor = document.getElementById(sectionId);
+          const heading = anchor?.closest('h2') ?? anchor;
+          if (!heading) return;
+          observedSections.set(heading, sectionId);
+          sectionObserver.observe(heading);
+        });
+      }
+    </script>
+  </body>
+</html>

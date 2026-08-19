@@ -8,13 +8,14 @@ import {
   FileText,
   Gamepad2,
   Github,
-  HelpCircle,
   Keyboard,
   Layers,
+  Moon,
   RefreshCcw,
   Settings2,
   ShieldCheck,
   Sparkles,
+  Sun,
   Terminal,
   Zap,
 } from 'lucide-astro';
@@ -40,7 +41,9 @@ const wingetStandardId = import.meta.env.PUBLIC_WINGET_ID ?? 'PhatMT97.VKey';
 const wingetClassicId = 'PhatMT97.VKey.Classic';
 const releasesUrl = `https://github.com/${githubOwner}/${githubRepo}/releases`;
 const repoUrl = `https://github.com/${githubOwner}/${githubRepo}`;
-const guideUrl = `https://github.com/${githubOwner}/${githubRepo}/blob/master/docs/GUIDE.md`;
+const guideUrl = '/guide';
+const autostartGuideUrl = `https://github.com/${githubOwner}/${githubRepo}/blob/master/docs/uninstall-autostart.md`;
+const antivirusGuideUrl = `https://github.com/${githubOwner}/${githubRepo}/blob/master/docs/ANTIVIRUS.md`;
 
 async function getLatestRelease(): Promise<GitHubRelease | null> {
   try {
@@ -78,7 +81,7 @@ function isSafeUrl(value: string): boolean {
 }
 
 function renderInlineMarkdown(value: string): string {
-  let html = escapeHtml(value);
+  let html = escapeHtml(value.replaceAll('—', ' - ').replaceAll('–', '-'));
 
   html = html.replace(/\[!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)\]\((https?:\/\/[^\s)]+)\)/g, (_match, alt: string, imageUrl: string, linkUrl: string) => {
     if (!isSafeUrl(imageUrl) || !isSafeUrl(linkUrl)) return '';
@@ -228,14 +231,29 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VKey là bộ gõ tiếng Việt hiện đại cho Windows viết bằng C++20, Dual-Engine C++/Rust, Hybrid TSF + Hook, siêu nhẹ ~0.3-2 MB RAM và 100% offline an toàn." />
-    <meta name="theme-color" content="#222B49" />
-    <title>VKey — Bộ gõ tiếng Việt hiện đại cho Windows</title>
+    <meta name="description" content="VKey là bộ gõ tiếng Việt mã nguồn mở cho Windows, hỗ trợ Telex, VNI, cấu hình theo ứng dụng và xử lý phím gõ ngay trên máy." />
+    <meta id="theme-color" name="theme-color" content="#ffffff" />
+    <title>VKey - Bộ gõ tiếng Việt cho Windows</title>
     <link rel="icon" href="/logo.png" />
     <link rel="apple-touch-icon" href="/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script is:inline>
+      (() => {
+        let theme = 'light';
+        try {
+          const savedTheme = localStorage.getItem('vkey-theme');
+          theme = savedTheme === 'light' || savedTheme === 'dark'
+            ? savedTheme
+            : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        } catch {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.dataset.theme = theme;
+        document.querySelector('#theme-color')?.setAttribute('content', theme === 'dark' ? '#0e1322' : '#ffffff');
+      })();
+    </script>
   </head>
   <body>
     <header class="site-header">
@@ -244,22 +262,28 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
         <span>VKey</span>
       </a>
       <nav class="nav" aria-label="Điều hướng chính">
-        <a href="#changelog">Changelog</a>
+        <a href="#changelog">Bản phát hành</a>
         <a href="#features">Tính năng</a>
         <a href="#install">Cài đặt</a>
-        <a href="#faq">FAQ</a>
-        <a href={guideUrl} target="_blank" rel="noreferrer">Hướng dẫn</a>
+        <a href="#faq">Câu hỏi</a>
+        <a href={guideUrl}>Hướng dẫn</a>
       </nav>
-      <a class="header-cta" href={downloadUrl}>Download</a>
+      <div class="header-actions">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Chuyển giao diện" title="Chuyển giao diện">
+          <Moon class="theme-icon theme-icon-moon" size={19} aria-hidden="true" />
+          <Sun class="theme-icon theme-icon-sun" size={19} aria-hidden="true" />
+        </button>
+        <a class="header-cta" href={downloadUrl}>Tải xuống</a>
+      </div>
     </header>
 
     <main id="top">
       <section class="hero section-shell">
         <div class="hero-copy">
-          <p class="eyebrow"><Sparkles size={16} /> Bộ gõ tiếng Việt hiện đại cho Windows · C++20</p>
-          <h1>Bộ gõ tiếng Việt hiện đại cho Windows.</h1>
+          <p class="eyebrow"><Sparkles size={16} /> Mã nguồn mở cho Windows</p>
+          <h1>Bộ gõ tiếng Việt cho Windows.</h1>
           <p class="hero-lead">
-            Bộ gõ tiếng Việt thế hệ mới cho Windows — siêu nhẹ, mượt mà, 100% offline và tối ưu cho cả làm việc lẫn chơi game.
+            Hỗ trợ Telex, VNI, cấu hình theo ứng dụng và xử lý phím gõ ngay trên máy.
           </p>
 
           <div class="cta-row" aria-label="Download options">
@@ -279,14 +303,6 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
             </button>
           </div>
 
-          <div class="trust-row" aria-label="Product highlights">
-            <span><CheckCircle2 size={16} /> Siêu nhẹ ~0.3–2 MB RAM</span>
-            <span><CheckCircle2 size={16} /> 100% Offline & Bảo mật</span>
-            <span><CheckCircle2 size={16} /> Telex + VNI / Tự định nghĩa</span>
-            <span><CheckCircle2 size={16} /> Game-Friendly (WASD mượt)</span>
-            <span><CheckCircle2 size={16} /> Dual-Engine C++ & Rust</span>
-            <span><CheckCircle2 size={16} /> TSF + Hook Hybrid</span>
-          </div>
         </div>
 
         <div class="hero-visual" aria-label="VKey app preview">
@@ -295,29 +311,39 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
               <span></span><span></span><span></span>
             </div>
             <div class="window-body">
-              <div class="status-pill"><Zap size={14} /> Smart Switch per-app</div>
-              <h2>Gõ tiếng Việt mượt mà</h2>
+              <div class="status-pill"><Zap size={14} /> Nhớ chế độ theo ứng dụng</div>
+              <h2>Gõ tiếng Việt theo cách bạn chọn</h2>
               <div class="typing-demo">
                 <span>tieengs Vieetj</span>
                 <ChevronRight size={18} />
                 <strong>tiếng Việt</strong>
               </div>
               <div class="settings-list">
-                <div><Keyboard size={18} /> Telex + VNI / Tự định nghĩa</div>
-                <div><Cpu size={18} /> Dual-Engine (C++ & Rust)</div>
-                <div><Settings2 size={18} /> Cấu hình theo từng App</div>
+                <div><Keyboard size={18} /> Telex, VNI và kiểu gõ tùy chỉnh</div>
+                <div><Cpu size={18} /> Engine C++20, Rust tùy chọn</div>
+                <div><Settings2 size={18} /> Cấu hình theo từng ứng dụng</div>
               </div>
             </div>
           </div>
-          <div class="floating-card card-top"><ShieldCheck size={18} /> 100% Offline & No Keylogger</div>
-          <div class="floating-card card-bottom"><Gamepad2 size={18} /> Chế độ Game (WASD mượt)</div>
+          <div class="floating-card card-top"><ShieldCheck size={18} /> Xử lý cục bộ, không ghi phím</div>
+          <div class="floating-card card-bottom"><Gamepad2 size={18} /> Cấu hình riêng cho game</div>
+        </div>
+      </section>
+
+      <section class="product-facts section-shell" aria-label="Thông tin chính về VKey">
+        <div class="trust-row">
+          <span><CheckCircle2 size={16} /> Không thu thập hoặc gửi phím gõ</span>
+          <span><CheckCircle2 size={16} /> Telex, VNI và kiểu gõ tùy chỉnh</span>
+          <span><CheckCircle2 size={16} /> Chế độ game cấu hình theo ứng dụng</span>
+          <span><CheckCircle2 size={16} /> Engine C++20, Rust nâng cao tùy chọn</span>
+          <span><CheckCircle2 size={16} /> Hỗ trợ Hook và Windows TSF</span>
         </div>
       </section>
 
       <section id="changelog" class="section-shell changelog-section">
         <div class="section-heading">
-          <p class="eyebrow"><FileText size={16} /> Latest release</p>
-          <h2>Changelog mới nhất</h2>
+          <p class="eyebrow"><FileText size={16} /> Bản phát hành</p>
+          <h2>Thay đổi mới nhất</h2>
         </div>
 
         <article class="release-card">
@@ -341,65 +367,63 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
 
       <section id="features" class="section-shell">
         <div class="section-heading centered">
-          <p class="eyebrow"><Sparkles size={16} /> Tính năng nổi bật</p>
-          <h2>Mọi thứ bạn cần ở một bộ gõ thế hệ mới</h2>
-          <p>Gọn nhẹ, chính xác, phản hồi tức thì và tối ưu cho từng ứng dụng.</p>
+          <h2>Các chức năng chính</h2>
+          <p>Telex, VNI, cấu hình theo ứng dụng, macro, chuyển mã và hai cơ chế tích hợp với Windows.</p>
         </div>
 
         <div class="feature-grid">
           <article class="feature-card">
             <Cpu size={24} />
-            <h3>Dual-Engine C++ & Rust</h3>
-            <p>Engine C++20 siêu nhẹ kết hợp tùy chọn Rust tự sửa lỗi gõ nhanh và nhận diện tiếng Anh mượt mà.</p>
+            <h3>Engine C++20 và Rust tùy chọn</h3>
+            <p>Engine C++20 được tích hợp sẵn. Engine Rust cho kiểm tra chính tả nâng cao là tùy chọn và mặc định tắt.</p>
           </article>
           <article class="feature-card">
             <Keyboard size={24} />
-            <h3>Telex + VNI / Tự định nghĩa</h3>
-            <p>Hỗ trợ Telex, VNI, Simple Telex, gõ song song cả hai kiểu và tương thích đầy đủ mọi bảng mã.</p>
+            <h3>Telex, VNI và kiểu gõ tùy chỉnh</h3>
+            <p>Hỗ trợ Telex, VNI, Simple Telex, chế độ kết hợp và các bảng mã Unicode, TCVN3, VNI Windows.</p>
           </article>
           <article class="feature-card">
             <RefreshCcw size={24} />
-            <h3>Smart Switch theo App</h3>
-            <p>Tự động nhớ chế độ V/E theo từng app, hỗ trợ khoá cứng chế độ và tự tắt khi dùng bàn phím CJK.</p>
+            <h3>Nhớ chế độ theo ứng dụng</h3>
+            <p>Ghi nhớ trạng thái Việt hoặc Anh, cho phép đặt quy tắc riêng và tự tắt khi dùng bố cục bàn phím CJK.</p>
           </article>
           <article class="feature-card">
             <Gamepad2 size={24} />
             <h3>Chế độ Game (WASD)</h3>
-            <p>Bật phím tắt chơi game mượt mà, di chuyển WASD không bị kẹt hay nuốt phím khi đang chat.</p>
+            <p>Cho phép chọn cách gửi phím riêng cho từng game để giảm xung đột giữa Telex và các phím di chuyển.</p>
           </article>
           <article class="feature-card">
             <Zap size={24} />
-            <h3>Macro & Chuyển mã nhanh</h3>
-            <p>Gõ tắt dài tới 20.000 ký tự có xuống dòng, bôi đen chuyển mã tức thì và đổi chữ hoa/thường.</p>
+            <h3>Macro và chuyển mã</h3>
+            <p>Macro hỗ trợ nội dung dài và xuống dòng. Công cụ chuyển mã làm việc trên phần văn bản đang chọn.</p>
           </article>
           <article class="feature-card">
             <Layers size={24} />
-            <h3>Siêu nhẹ & 100% Offline</h3>
-            <p>Chỉ chiếm ~0.3–2 MB RAM, phản hồi tức thì với TSF + Hook và hoạt động hoàn toàn offline.</p>
+            <h3>Xử lý cục bộ</h3>
+            <p>VKey không thu thập, lưu trữ hoặc gửi phím gõ. Mã nguồn được công khai để người dùng kiểm tra.</p>
           </article>
         </div>
       </section>
 
       <section id="install" class="section-shell install-section">
         <div class="section-heading">
-          <p class="eyebrow"><Download size={16} /> Cài đặt</p>
           <h2>Cài đặt theo cách bạn muốn</h2>
-          <p>Tải file Zip giải nén dùng ngay hoặc cài tự động qua WinGet.</p>
+          <p>Tải tệp ZIP từ GitHub Releases hoặc cài đặt bằng WinGet.</p>
         </div>
 
         <div class="install-grid">
           <article class="install-card highlighted">
             <Download size={24} />
             <h3>GitHub Release</h3>
-            <p>Tải file Zip chính thức từ GitHub — giải nén và dùng ngay không cần cài đặt:</p>
+            <p>Tải tệp ZIP từ GitHub, giải nén và chạy ứng dụng:</p>
             <ul class="edition-list">
               <li>
                 <CheckCircle2 size={16} />
-                <span><strong>Bản Tiêu chuẩn:</strong> Giao diện Sciter Glassmorphism hiện đại, tự đổi theme sáng/tối.</span>
+                <span><strong>Bản Tiêu chuẩn:</strong> Giao diện Sciter, tự đổi giao diện sáng hoặc tối theo Windows.</span>
               </li>
               <li>
                 <CheckCircle2 size={16} />
-                <span><strong>Bản Classic:</strong> Win32 native siêu nhẹ, 100% mã nguồn mở, đã ký Authenticode.</span>
+                <span><strong>Bản Classic:</strong> Giao diện Win32 native, không nạp engine Rust. Xem từng release để biết trạng thái ký số.</span>
               </li>
             </ul>
             <div class="install-actions">
@@ -438,19 +462,29 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
 
       <section id="faq" class="section-shell faq-section">
         <div class="section-heading centered">
-          <p class="eyebrow"><HelpCircle size={16} /> FAQ</p>
           <h2>Câu hỏi thường gặp</h2>
-          <p>Giải đáp thắc mắc về tính năng, bảo mật và cách sử dụng VKey.</p>
+          <p>Thông tin về dữ liệu phím gõ, các phiên bản và cách cấu hình VKey.</p>
         </div>
 
         <div class="faq-grid">
           <details open>
-            <summary>VKey có an toàn không? Có theo dõi phím gõ (keylogger) không?</summary>
+            <summary>VKey xử lý dữ liệu phím gõ như thế nào?</summary>
             <div class="faq-body">
               <ul>
-                <li><strong>100% Offline:</strong> Hoạt động hoàn toàn trên máy cục bộ, không thu thập và không gửi bất kỳ dữ liệu nào ra ngoài.</li>
-                <li><strong>Mã nguồn mở:</strong> Minh bạch trên GitHub theo giấy phép GPL-3.0 để cộng đồng tự do kiểm chứng.</li>
-                <li><strong>Xác thực Sigstore:</strong> Mỗi bản phát hành đều đính kèm build attestation từ GitHub Actions để chứng minh nguồn gốc.</li>
+                <li><strong>Xử lý cục bộ:</strong> Theo chính sách của dự án, VKey không thu thập, lưu trữ hoặc gửi phím gõ.</li>
+                <li><strong>Mã nguồn công khai:</strong> Phần mã nguồn mở được phát hành trên GitHub theo GPL-3.0 để cộng đồng kiểm tra.</li>
+                <li><strong>Xác minh bản tải:</strong> Dự án cung cấp Sigstore và build attestation cho các bản phát hành.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>Windows hoặc phần mềm diệt virus cảnh báo VKey, tôi nên làm gì?</summary>
+            <div class="faq-body">
+              <ul>
+                <li><strong>Kiểm tra nguồn tải:</strong> Chỉ tải từ GitHub Releases chính thức và xác minh Sigstore attestation trước khi tạo ngoại lệ.</li>
+                <li><strong>Cảnh báo theo hành vi:</strong> Bộ gõ cần đọc và gửi lại phím để đặt dấu nên có thể bị nhận diện nhầm. Trạng thái ký số tùy từng phiên bản.</li>
+                <li><a href={antivirusGuideUrl} target="_blank" rel="noreferrer">Xem cách xác minh, khôi phục và xử lý cảnh báo</a>.</li>
               </ul>
             </div>
           </details>
@@ -459,8 +493,8 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
             <summary>VKey có mấy phiên bản? Khác nhau như thế nào?</summary>
             <div class="faq-body">
               <ul>
-                <li><strong>Bản Tiêu chuẩn (Sciter UI):</strong> Giao diện Glassmorphism hiện đại, tự động đổi theme Sáng/Tối theo Windows, hỗ trợ nạp Engine Rust.</li>
-                <li><strong>Bản Classic:</strong> Win32 native siêu nhẹ, 100% mã nguồn mở và đã được ký số Authenticode đầy đủ bởi SignPath.</li>
+                <li><strong>Bản Tiêu chuẩn (Sciter UI):</strong> Tự đổi giao diện sáng hoặc tối theo Windows và có thể nạp engine Rust tùy chọn.</li>
+                <li><strong>Bản Classic:</strong> Giao diện Win32 native. Bản phát hành chính thức không nạp engine Rust.</li>
               </ul>
             </div>
           </details>
@@ -469,8 +503,8 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
             <summary>Engine Rust Nâng cao là gì và có bắt buộc dùng không?</summary>
             <div class="faq-body">
               <ul>
-                <li><strong>Không bắt buộc:</strong> VKey mặc định chạy Engine C++20 có sẵn, đáp ứng 100% nhu cầu gõ tiếng Việt thông thường.</li>
-                <li><strong>Tính năng mở rộng:</strong> Tự sửa lỗi gõ nhanh đảo phím (<code>hcaof</code> → <code>chào</code>) và nhận diện từ tiếng Anh (<code>asus</code>, <code>status</code>) không bị dính dấu.</li>
+                <li><strong>Không bắt buộc:</strong> VKey mặc định dùng engine C++20 có sẵn cho các chức năng gõ tiếng Việt thông thường.</li>
+                <li><strong>Tính năng mở rộng:</strong> Engine Rust bổ sung tự sửa một số lỗi đảo phím và nhận diện từ tiếng Anh. Tính năng này mặc định tắt.</li>
               </ul>
             </div>
           </details>
@@ -479,8 +513,8 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
             <summary>Chơi game có bị dính phím di chuyển (WASD) không?</summary>
             <div class="faq-body">
               <ul>
-                <li><strong>Không bị dính phím:</strong> Bật <strong>Chế độ Game (WASD)</strong> bằng phím tắt ngay khi đang ở trong game.</li>
-                <li><strong>Chuyển tiếp phím gốc:</strong> Di chuyển W, A, S, D mượt mà trong khi vẫn thoải mái chat tiếng Việt Telex bình thường.</li>
+                <li><strong>Cấu hình theo game:</strong> Chọn <strong>Chế độ Game (WASD)</strong> cho ứng dụng cần dùng hoặc gán một phím tắt để chuyển nhanh.</li>
+                <li><strong>Lưu ý tương thích:</strong> Cách gửi phím có thể cần điều chỉnh theo từng game và các phần mềm đang chạy cùng lúc.</li>
               </ul>
             </div>
           </details>
@@ -496,15 +530,39 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
           </details>
 
           <details>
+            <summary>Làm sao đặt lại “Khởi động cùng Windows” khi autostart không hoạt động?</summary>
+            <div class="faq-body">
+              <ul>
+                <li><strong>Thử đăng ký lại:</strong> Trong Settings, tắt “Khởi động cùng Windows”, sau đó bật lại để cập nhật đường dẫn hiện tại.</li>
+                <li><strong>Nếu vẫn lỗi:</strong> Tắt VKey, gỡ cấu hình cũ trong Registry và Task Scheduler, rồi mở VKey và bật lại autostart.</li>
+                <li><a href={autostartGuideUrl} target="_blank" rel="noreferrer">Xem hướng dẫn đặt lại autostart bằng Command Line</a>.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
             <summary>Tôi có thể dùng VKey cho công việc và doanh nghiệp không?</summary>
             <div class="faq-body">
               <ul>
-                <li><strong>Hoàn toàn tự do & miễn phí:</strong> VKey phát hành theo giấy phép mã nguồn mở <strong>GPL-3.0</strong>.</li>
-                <li>Không phát sinh bất kỳ chi phí hay nghĩa vụ nào khi sử dụng cho cá nhân, công việc hay trong doanh nghiệp.</li>
+                <li><strong>Có thể dùng miễn phí:</strong> VKey được phát hành theo giấy phép <strong>GPL-3.0</strong>.</li>
+                <li>Cá nhân và doanh nghiệp có thể sử dụng phần mềm. Khi phân phối lại hoặc sửa đổi, cần tuân thủ các điều khoản GPL-3.0.</li>
               </ul>
             </div>
           </details>
         </div>
+
+        <aside class="guide-callout" aria-label="Hướng dẫn sử dụng đầy đủ">
+          <div class="guide-callout-copy">
+            <FileText size={24} />
+            <div>
+              <h3>Hướng dẫn sử dụng đầy đủ</h3>
+              <p>Xem cách thiết lập kiểu gõ, cấu hình theo ứng dụng, macro, phím tắt, TSF và công cụ chuyển mã.</p>
+            </div>
+          </div>
+          <a class="guide-link" href={guideUrl}>
+            Xem hướng dẫn <ChevronRight size={17} />
+          </a>
+        </aside>
       </section>
     </main>
 
@@ -514,7 +572,7 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
           <img class="brand-mark" src="/logo.png" alt="VKey logo" width="36" height="36" />
           <span>VKey</span>
         </a>
-        <p>Bộ gõ tiếng Việt hiện đại, siêu nhẹ và mã nguồn mở cho Windows.</p>
+        <p>Bộ gõ tiếng Việt mã nguồn mở cho Windows.</p>
       </div>
       <div class="footer-right">
         <a class="github-link" href={repoUrl} target="_blank" rel="noreferrer" aria-label="GitHub repository">
@@ -525,6 +583,42 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
     </footer>
 
     <script>
+      const root = document.documentElement;
+      const themeButton = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+      const themeColor = document.querySelector<HTMLMetaElement>('#theme-color');
+
+      const applyTheme = (theme: 'light' | 'dark') => {
+        root.dataset.theme = theme;
+        const label = theme === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối';
+        themeButton?.setAttribute('aria-label', label);
+        themeButton?.setAttribute('title', label);
+        themeButton?.setAttribute('aria-pressed', String(theme === 'dark'));
+        themeColor?.setAttribute('content', theme === 'dark' ? '#0e1322' : '#ffffff');
+      };
+
+      const currentTheme = root.dataset.theme === 'dark' ? 'dark' : 'light';
+      applyTheme(currentTheme);
+
+      themeButton?.addEventListener('click', () => {
+        const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        applyTheme(nextTheme);
+        try {
+          localStorage.setItem('vkey-theme', nextTheme);
+        } catch {
+          // Theme still applies for this page when storage is unavailable.
+        }
+      });
+
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+      systemTheme.addEventListener('change', (event) => {
+        try {
+          if (localStorage.getItem('vkey-theme')) return;
+        } catch {
+          // Follow the system theme when storage is unavailable.
+        }
+        applyTheme(event.matches ? 'dark' : 'light');
+      });
+
       const copyButtons = document.querySelectorAll('[data-copy-target]');
       copyButtons.forEach((button) => {
         button.addEventListener('click', async () => {
