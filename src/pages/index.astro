@@ -306,27 +306,31 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
         </div>
 
         <div class="hero-visual" aria-label="VKey app preview">
-          <div class="app-window">
-            <div class="window-bar">
-              <span></span><span></span><span></span>
+          <div class="app-preview-stage">
+            <div class="app-window">
+              <div class="window-bar">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="window-body">
+                <div class="status-pill"><Zap size={14} /> Nhớ chế độ theo ứng dụng</div>
+                <h2>Gõ tiếng Việt theo cách bạn chọn</h2>
+                <div class="typing-demo">
+                  <span>tieengs Vieetj</span>
+                  <ChevronRight size={18} />
+                  <strong>tiếng Việt</strong>
+                </div>
+                <div class="settings-list">
+                  <div><Keyboard size={18} /> Telex, VNI và kiểu gõ tùy chỉnh</div>
+                  <div><Cpu size={18} /> Engine C++20, Rust tùy chọn</div>
+                  <div><Settings2 size={18} /> Cấu hình theo từng ứng dụng</div>
+                </div>
+              </div>
             </div>
-            <div class="window-body">
-              <div class="status-pill"><Zap size={14} /> Nhớ chế độ theo ứng dụng</div>
-              <h2>Gõ tiếng Việt theo cách bạn chọn</h2>
-              <div class="typing-demo">
-                <span>tieengs Vieetj</span>
-                <ChevronRight size={18} />
-                <strong>tiếng Việt</strong>
-              </div>
-              <div class="settings-list">
-                <div><Keyboard size={18} /> Telex, VNI và kiểu gõ tùy chỉnh</div>
-                <div><Cpu size={18} /> Engine C++20, Rust tùy chọn</div>
-                <div><Settings2 size={18} /> Cấu hình theo từng ứng dụng</div>
-              </div>
+            <div class="preview-notes" aria-label="Điểm nổi bật của VKey">
+              <div class="preview-note"><ShieldCheck size={18} /> Xử lý cục bộ, không ghi phím</div>
+              <div class="preview-note"><Gamepad2 size={18} /> Cấu hình riêng cho game</div>
             </div>
           </div>
-          <div class="floating-card card-top"><ShieldCheck size={18} /> Xử lý cục bộ, không ghi phím</div>
-          <div class="floating-card card-bottom"><Gamepad2 size={18} /> Cấu hình riêng cho game</div>
         </div>
       </section>
 
