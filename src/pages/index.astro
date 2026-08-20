@@ -458,7 +458,7 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
               </li>
               <li>
                 <CheckCircle2 size={16} />
-                <span><strong>Bản Classic:</strong> Giao diện Win32 native, không nạp engine Rust. Xem từng release để biết trạng thái ký số.</span>
+                <span><strong>Bản Classic:</strong> Giao diện Win32 native, không nạp engine Rust. SignPath Foundation chỉ ký <code>VKeyClassic.exe</code>, <code>VKeyTSF.dll</code> và <code>VKeyWatchdog.exe</code> trong artifact Classic riêng.</span>
               </li>
             </ul>
             <div class="install-actions">
@@ -530,6 +530,17 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
               <ul>
                 <li><strong>Bản Tiêu chuẩn (Sciter UI):</strong> Tự đổi giao diện sáng hoặc tối theo Windows và có thể nạp engine Rust tùy chọn.</li>
                 <li><strong>Bản Classic:</strong> Giao diện Win32 native. Bản phát hành chính thức không nạp engine Rust.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>SignPath Foundation áp dụng cho những tệp nào?</summary>
+            <div class="faq-body">
+              <ul>
+                <li><strong>Phạm vi ký:</strong> Chỉ gồm <code>VKeyClassic.exe</code>, <code>VKeyTSF.dll</code> và <code>VKeyWatchdog.exe</code> được build từ mã nguồn GPL-3.0 công khai.</li>
+                <li><strong>Cấu hình riêng:</strong> Artifact Classic được build với Rust engine bị compile-out hoàn toàn và không chứa hoặc nạp Sciter.</li>
+                <li><strong>Ngoài phạm vi:</strong> VKeyApp, installer dùng Sciter, Rust engine và thành phần proprietary không được gửi Foundation ký. <code>VKeyBrowserHost.exe</code> là mã nguồn mở GPL-3.0 nhưng không nằm trong request ba tệp hiện tại.</li>
               </ul>
             </div>
           </details>
