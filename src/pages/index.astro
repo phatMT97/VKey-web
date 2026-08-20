@@ -8,6 +8,7 @@ import {
   FileText,
   Gamepad2,
   Github,
+  Globe2,
   Keyboard,
   Layers,
   Moon,
@@ -387,7 +388,7 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
       <section id="features" class="section-shell">
         <div class="section-heading centered">
           <h2>Các chức năng chính</h2>
-          <p>Telex, VNI, cấu hình theo ứng dụng, macro, chuyển mã và hai cơ chế tích hợp với Windows.</p>
+          <p>Telex, VNI, cấu hình theo ứng dụng hoặc website, macro, chuyển mã và hai cơ chế tích hợp với Windows.</p>
         </div>
 
         <div class="feature-grid">
@@ -422,6 +423,21 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
             <p>VKey không thu thập, lưu trữ hoặc gửi phím gõ. Mã nguồn được công khai để người dùng kiểm tra.</p>
           </article>
         </div>
+
+        <aside class="guide-callout" aria-label="VKey Browser thử nghiệm">
+          <div class="guide-callout-copy">
+            <Globe2 size={24} />
+            <div>
+              <h3>VKey Browser (thử nghiệm)</h3>
+              <p>
+                Giữ chế độ VKey mặc định hoặc áp dụng English, TSF theo từng website. Ví dụ: Google dùng V, VOZ dùng E và tự đổi khi chuyển tab.
+              </p>
+            </div>
+          </div>
+          <a class="guide-link" href="/guide#browser-extension">
+            Cách cài extension <ChevronRight size={17} />
+          </a>
+        </aside>
       </section>
 
       <section id="install" class="section-shell install-section">

@@ -45,6 +45,51 @@ Bạn có thể đặt kiểu gõ, bảng mã và cách gửi riêng cho từng 
 
 Khoá chế độ theo ứng dụng áp dụng chủ yếu cho hook engine. Ứng dụng đang dùng TSF có thể có hành vi khác.
 
+## <span id="browser-extension">Đổi chế độ theo website bằng extension (thử nghiệm)</span>
+
+[VKey Browser](https://github.com/phatMT97/VKey-Browser) cho phép mỗi website dùng một chế độ riêng. Extension chỉ gửi hostname và chế độ đã chọn đến `VKeyBrowserHost` trên máy; không đọc hoặc gửi nội dung bạn nhập.
+
+### Chuẩn bị
+
+- Dùng bản VKey có `VKeyBrowserHost.exe` nằm cùng thư mục với `VKey.exe` hoặc
+  `VKeyClassic.exe`.
+- Chạy VKey ít nhất một lần để đăng ký Native Messaging Host cho trình duyệt.
+- Tải hoặc clone [repo VKey-Browser](https://github.com/phatMT97/VKey-Browser).
+
+### Cài trên Chrome, Edge hoặc Brave
+
+1. Mở trang quản lý extension: `chrome://extensions`, `edge://extensions` hoặc `brave://extensions`.
+2. Bật **Developer mode**.
+3. Chọn **Load unpacked** và mở thư mục đã tải của VKey-Browser.
+4. Ghim biểu tượng VKey Browser để đổi chế độ nhanh cho website hiện tại.
+
+### Cài tạm trên Firefox
+
+1. Chạy `npm run build:firefox` trong thư mục VKey-Browser.
+2. Mở `about:debugging#/runtime/this-firefox`.
+3. Chọn **Load Temporary Add-on**.
+4. Chọn file `dist/firefox/manifest.json`.
+
+Thư mục gốc là gói Chromium; không chọn `manifest.json` ở đó cho Firefox.
+
+Firefox sẽ gỡ extension tạm khi đóng trình duyệt; đây là cách thử nghiệm dành cho nhà phát triển.
+
+### Thiết lập và chuyển tab
+
+Mở website, nhấn biểu tượng extension rồi chọn:
+
+- **Default:** để VKey tự quyết định, không ép chế độ V hay E.
+- **English (E):** luôn dùng tiếng Anh trên hostname này.
+- **TSF:** yêu cầu VKey dùng TSF cho website này khi trình duyệt hỗ trợ.
+
+Để có Google dùng V và VOZ dùng E, trước tiên giữ trạng thái VKey gốc ở V, đặt `google.com` là **Default** và `voz.vn` là **English (E)**. Khi chuyển tab từ Google sang VOZ, extension gửi quy tắc của tab đang hoạt động và chế độ hiệu lực tự đổi từ V sang E; chuyển lại Google sẽ trở về V. **Default** không ép V: nếu trạng thái VKey gốc là E thì Google vẫn dùng E.
+
+Công tắc **Bật điều hướng theo website** được bật mặc định. Tắt công tắc để tạm ngừng áp dụng mọi rule mà không xóa cấu hình; bật lại thì các rule đã lưu có hiệu lực ngay.
+
+Popup hiển thị **Đã kết nối VKey** khi native host hoạt động. Nếu thấy **Chưa kết nối VKeyBrowserHost**, hãy kiểm tra bản VKey đang dùng có `VKeyBrowserHost.exe`, thoát/mở lại VKey để đăng ký host, sau đó khởi động lại trình duyệt và reload extension.
+
+> Đây là tính năng thử nghiệm. Thanh địa chỉ và các trang nội bộ như `chrome://` hoặc `about:` không cung cấp hostname trang web cho extension nên tiếp tục dùng trạng thái hiện tại của VKey. Xem thêm [tài liệu kỹ thuật và xử lý sự cố](https://github.com/phatMT97/VKey/blob/master/docs/BROWSER_EXTENSION.md).
+
 ## <span id="spellcheck">Chính tả, gõ tự do và khôi phục từ</span>
 
 - **Kiểm tra chính tả:** giảm việc đặt dấu nhầm vào chuỗi không giống âm tiết tiếng Việt.
@@ -74,7 +119,7 @@ VKey hỗ trợ Text Services Framework theo hai cách:
 - **Tăng cường ngữ cảnh:** hook vẫn là cách nhập chính, TSF hỗ trợ đọc ngữ cảnh để xử lý dấu và viết hoa.
 - **TSF làm phương thức nhập chính:** áp dụng cho các ứng dụng được thêm vào danh sách TSF. Cách này có thể phù hợp hơn với Office, ứng dụng Windows Store và một số ô nhập đặc thù.
 
-Khi TSF là phương thức nhập chính, Windows có thể gạch chân tạm thời phần chữ đang được soạn. Đây là trạng thái composition bình thường.
+Khi TSF là phương thức nhập chính, VKey yêu cầu Windows hiển thị phần chữ đang được soạn mà không gạch chân. Một số ứng dụng có thể tự vẽ kiểu composition riêng; nếu vẫn thấy gạch chân, hãy ghi rõ ứng dụng và phiên bản Windows khi báo lỗi.
 
 ## <span id="macro">Gõ tắt và macro</span>
 
