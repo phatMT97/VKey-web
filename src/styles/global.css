@@ -817,18 +817,8 @@ h1 {
   background: linear-gradient(180deg, var(--surface), var(--warm));
 }
 
-.install-card a,
-.install-card code {
+.install-card a {
   margin-top: auto;
-}
-
-.install-card code {
-  max-width: 100%;
-  overflow-x: auto;
-  border-radius: 14px;
-  background: var(--code-bg);
-  color: var(--code-text);
-  padding: 12px 14px;
 }
 
 .faq-grid {
