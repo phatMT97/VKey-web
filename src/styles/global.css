@@ -908,6 +908,11 @@ h1 {
   line-height: 1.5;
 }
 
+.edition-list li span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .edition-list svg {
   flex-shrink: 0;
   margin-top: 3px;
