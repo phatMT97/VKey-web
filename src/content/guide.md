@@ -82,7 +82,7 @@ Mở website, nhấn biểu tượng extension rồi chọn:
 - **English (E):** luôn dùng tiếng Anh trên hostname này.
 - **TSF:** yêu cầu VKey dùng TSF cho website này khi trình duyệt hỗ trợ.
 
-Để có Google dùng V và VOZ dùng E, trước tiên giữ trạng thái VKey gốc ở V, đặt `google.com` là **Default** và `voz.vn` là **English (E)**. Khi chuyển tab từ Google sang VOZ, extension gửi quy tắc của tab đang hoạt động và chế độ hiệu lực tự đổi từ V sang E; chuyển lại Google sẽ trở về V. **Default** không ép V: nếu trạng thái VKey gốc là E thì Google vẫn dùng E.
+Để có Google dùng V và GitHub dùng E, trước tiên giữ trạng thái VKey gốc ở V, đặt `google.com` là **Default** và `github.com` là **English (E)**. Khi chuyển tab từ Google sang GitHub, extension gửi quy tắc của tab đang hoạt động và chế độ hiệu lực tự đổi từ V sang E; chuyển lại Google sẽ trở về V. **Default** không ép V: nếu trạng thái VKey gốc là E thì Google vẫn dùng E.
 
 Công tắc **Bật điều hướng theo website** được bật mặc định. Tắt công tắc để tạm ngừng áp dụng mọi rule mà không xóa cấu hình; bật lại thì các rule đã lưu có hiệu lực ngay.
 
