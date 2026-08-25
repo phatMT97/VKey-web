@@ -122,7 +122,7 @@
 
 .guide-start-link {
   background: var(--accent-action);
-  color: #fff;
+  color: var(--accent-action-text);
 }
 
 .guide-start-link:hover {
@@ -278,7 +278,7 @@
   color: var(--accent-text);
   font-weight: 700;
   text-decoration: underline;
-  text-decoration-color: rgba(252, 88, 68, 0.34);
+  text-decoration-color: rgb(var(--brand-coral-rgb) / 0.34);
   text-underline-offset: 3px;
 }
 
@@ -320,7 +320,7 @@
 
 .guide-article blockquote {
   margin: 26px 0;
-  border: 1px solid rgba(252, 88, 68, 0.22);
+  border: 1px solid rgb(var(--brand-coral-rgb) / 0.22);
   border-left: 4px solid var(--accent);
   border-radius: 0 16px 16px 0;
   background: var(--warm);

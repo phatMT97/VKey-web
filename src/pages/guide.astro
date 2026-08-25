@@ -49,7 +49,7 @@ const guideSections = [
           theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
         document.documentElement.dataset.theme = theme;
-        document.querySelector('#theme-color')?.setAttribute('content', theme === 'dark' ? '#0e1322' : '#ffffff');
+        document.querySelector('#theme-color')?.setAttribute('content', theme === 'dark' ? '#111626' : '#ffffff');
       })();
     </script>
   </head>
@@ -122,7 +122,7 @@ const guideSections = [
         themeButton?.setAttribute('aria-label', label);
         themeButton?.setAttribute('title', label);
         themeButton?.setAttribute('aria-pressed', String(theme === 'dark'));
-        themeColor?.setAttribute('content', theme === 'dark' ? '#0e1322' : '#ffffff');
+        themeColor?.setAttribute('content', theme === 'dark' ? '#111626' : '#ffffff');
       };
 
       applyTheme(root.dataset.theme === 'dark' ? 'dark' : 'light');

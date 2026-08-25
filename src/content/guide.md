@@ -47,7 +47,7 @@ Khoá chế độ theo ứng dụng áp dụng chủ yếu cho hook engine. Ứn
 
 ## <span id="browser-extension">Đổi chế độ theo website bằng extension (thử nghiệm)</span>
 
-[VKey Browser](https://github.com/phatMT97/VKey-Browser) cho phép mỗi website dùng một chế độ riêng. Extension chỉ gửi hostname và chế độ đã chọn đến `VKeyBrowserHost` trên máy; không đọc hoặc gửi nội dung bạn nhập.
+[VKey Browser](https://github.com/phatMT97/VKey-Browser) tự nhớ trạng thái V/E theo website trong phiên trình duyệt và cho phép đặt rule cố định. Extension chỉ trao đổi hostname, rule và kết quả V/E sau hotkey với `VKeyBrowserHost` trên máy; không đọc hoặc gửi nội dung bạn nhập.
 
 ### Chuẩn bị
 
@@ -76,13 +76,15 @@ Firefox sẽ gỡ extension tạm khi đóng trình duyệt; đây là cách th�
 
 ### Thiết lập và chuyển tab
 
-Mở website, nhấn biểu tượng extension rồi chọn:
+Mở website, nhấn biểu tượng extension rồi chọn một chế độ cho hostname hiện tại:
 
-- **Default:** để VKey tự quyết định, không ép chế độ V hay E.
-- **English (E):** luôn dùng tiếng Anh trên hostname này.
-- **TSF:** yêu cầu VKey dùng TSF cho website này khi trình duyệt hỗ trợ.
+- **Tự nhớ V/E theo hotkey:** khi bạn đổi V/E bằng hotkey VKey, extension nhớ kết quả cho hostname và tự khôi phục khi quay lại trong cùng phiên trình duyệt.
+- **Luôn gõ English (hard):** luôn bỏ xử lý tiếng Việt trên hostname này và không cho hotkey ghi đè trạng thái.
+- **TSF tương thích (hard):** luôn dùng TSF cho hostname này, phù hợp với editor hoặc forum gặp lỗi dính chữ; cần bật hỗ trợ ứng dụng TSF trong VKey.
 
-Để có Google dùng V và GitHub dùng E, trước tiên giữ trạng thái VKey gốc ở V, đặt `google.com` là **Default** và `github.com` là **English (E)**. Khi chuyển tab từ Google sang GitHub, extension gửi quy tắc của tab đang hoạt động và chế độ hiệu lực tự đổi từ V sang E; chuyển lại Google sẽ trở về V. **Default** không ép V: nếu trạng thái VKey gốc là E thì Google vẫn dùng E.
+Lựa chọn được áp dụng ngay, không cần bấm nút Lưu. Hai rule `(hard)` được lưu cục bộ và vẫn còn sau khi khởi động lại trình duyệt. Trạng thái V/E tự nhớ chỉ tồn tại trong phiên hiện tại và tự xóa khi đóng hoặc khởi động lại trình duyệt. Chọn lại **Tự nhớ V/E theo hotkey** sẽ bỏ rule hard của hostname đó.
+
+Ví dụ: tại `google.com`, dùng hotkey chuyển sang V; tại `github.com`, dùng hotkey chuyển sang E. Trong phiên hiện tại, khi chuyển qua lại hai tab, extension sẽ tự khôi phục V hoặc E tương ứng. Nếu muốn một hostname luôn ở E sau cả khi khởi động lại trình duyệt, chọn **Luôn gõ English (hard)**.
 
 Công tắc **Bật điều hướng theo website** được bật mặc định. Tắt công tắc để tạm ngừng áp dụng mọi rule mà không xóa cấu hình; bật lại thì các rule đã lưu có hiệu lực ngay.
 
@@ -99,6 +101,25 @@ Popup hiển thị **Đã kết nối VKey** khi native host hoạt động. N�
 - **Viết hoa đầu câu:** hoạt động theo ngữ cảnh; TSF có thể cung cấp ngữ cảnh tốt hơn hook engine.
 
 Engine C++20 có sẵn đáp ứng các chức năng gõ thông thường. Engine Rust cho kiểm tra chính tả nâng cao là tùy chọn và mặc định tắt.
+
+### Luôn giữ một từ riêng
+
+Khi bật **Kiểm tra chính tả nâng cao** lần đầu, VKey tạo file
+`user_dictionary.txt` cạnh `config.toml`. Nếu thư mục cài đặt không ghi được,
+file nằm trong `%APPDATA%\\VKey`.
+
+1. Hãy báo lỗi tự sửa tại [GitHub Issues](https://github.com/phatMT97/VKey/issues)
+   trước.
+2. Mở `user_dictionary.txt` bằng trình soạn thảo văn bản và thêm mỗi từ cần
+   giữ vào một dòng, ví dụ `alo`.
+3. Lưu file ở dạng UTF-8.
+4. Chọn lại **Kiểm tra chính tả nâng cao** để nạp lại; có thể chuyển Nâng cao
+   → Cơ bản → Nâng cao. Hook và TSF sẽ dùng cùng danh sách.
+
+File không tồn tại sẽ được tạo sẵn. File trống hoặc chỉ có dòng bắt đầu bằng
+`#` là hợp lệ và xóa danh sách bảo vệ. Nếu file có lỗi UTF-8, dòng không hợp lệ,
+quá lớn hoặc tạm thời không đọc được, VKey giữ bản hợp lệ gần nhất. Danh sách
+này chỉ được lưu và đọc trên máy, không được gửi đi.
 
 ## <span id="hotkeys">Quản lý phím tắt</span>
 

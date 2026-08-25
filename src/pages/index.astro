@@ -267,7 +267,7 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
           theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
         document.documentElement.dataset.theme = theme;
-        document.querySelector('#theme-color')?.setAttribute('content', theme === 'dark' ? '#0e1322' : '#ffffff');
+        document.querySelector('#theme-color')?.setAttribute('content', theme === 'dark' ? '#111626' : '#ffffff');
       })();
     </script>
   </head>
@@ -430,7 +430,7 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
             <div>
               <h3>VKey Browser (thử nghiệm)</h3>
               <p>
-                Giữ chế độ VKey mặc định hoặc áp dụng English, TSF theo từng website. Ví dụ: Google dùng V, GitHub dùng E và tự đổi khi chuyển tab.
+                Tự nhớ V/E theo từng website trong phiên trình duyệt, hoặc đặt rule English và TSF cố định cho hostname cần thiết.
               </p>
             </div>
           </div>
@@ -639,7 +639,7 @@ const changelogHtml = latestRelease?.body?.trim() ? renderReleaseMarkdown(latest
         themeButton?.setAttribute('aria-label', label);
         themeButton?.setAttribute('title', label);
         themeButton?.setAttribute('aria-pressed', String(theme === 'dark'));
-        themeColor?.setAttribute('content', theme === 'dark' ? '#0e1322' : '#ffffff');
+        themeColor?.setAttribute('content', theme === 'dark' ? '#111626' : '#ffffff');
       };
 
       const currentTheme = root.dataset.theme === 'dark' ? 'dark' : 'light';
