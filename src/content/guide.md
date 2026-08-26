@@ -148,9 +148,27 @@ Macro thay một chuỗi ngắn bằng nội dung dài hơn. Nội dung có th�
 
 - Chọn phím kích hoạt như `Space`, `Enter` hoặc `Tab`.
 - Có thể dùng macro trong chế độ tiếng Anh nếu tùy chọn tương ứng được bật.
-- Kiểu viết hoa của kết quả có thể theo cách viết của từ kích hoạt.
+- Bật **Tự động viết hoa theo phím tắt** để kiểu viết hoa của kết quả đi theo
+  cách viết của từ gõ tắt.
 
 Ví dụ: cấu hình `dc` thành một địa chỉ đầy đủ, sau đó gõ `dc` và phím kích hoạt để chèn nội dung.
+
+### Viết hoa toàn bộ nội dung macro
+
+1. Mở **Bảng gõ tắt**.
+2. Nhập từ gõ tắt và nội dung đầy đủ bằng chữ thường. Ví dụ: đặt `tp` thành
+   `tp.hcm`.
+3. Bật **Tự động viết hoa theo phím tắt** trong phần thiết lập macro.
+4. Gõ từ gõ tắt, rồi nhấn một phím kích hoạt đã chọn. Kết quả sẽ đi theo
+   cách viết hoa của từ gõ tắt:
+
+| Từ gõ tắt đã nhập | Kết quả |
+|---|---|
+| `tp` | `tp.hcm` |
+| `Tp` | `Tp.Hcm` |
+| `TP` | `TP.HCM` |
+
+Không cần tạo macro riêng cho từng kiểu viết hoa.
 
 ## <span id="convert-tool">Chuyển mã và biến đổi chữ</span>
 
